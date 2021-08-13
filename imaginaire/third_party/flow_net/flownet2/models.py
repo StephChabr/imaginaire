@@ -5,8 +5,8 @@
 import torch
 from torch.nn import init
 import torch.nn as nn
-import resample2d
-import channelnorm
+from imaginaire.third_party.resample2d import resample2d
+from imaginaire.third_party.channelnorm import channelnorm
 import numpy as np
 from imaginaire.third_party.flow_net.flownet2.networks import flownet_c
 from imaginaire.third_party.flow_net.flownet2.networks import flownet_s

@@ -126,7 +126,7 @@ class BaseDataset(data.Dataset):
             self.interpolators[name] = None
             if info['ext'] is not None and \
                     (info['ext'] in IMG_EXTENSIONS or
-                        info['ext'] in VIDEO_EXTENSIONS):
+                        info['ext'] in VIDEO_EXTENSIONS or info['ext'] == 'npy'):
                 self.image_data_types.append(name)
                 self.interpolators[name] = getattr(
                     Image, info['interpolator'])
@@ -232,8 +232,8 @@ class BaseDataset(data.Dataset):
         transform_list = [transforms.ToTensor()]
         if normalize:
             transform_list.append(
-                transforms.Normalize((0.5, 0.5, 0.5),
-                                     (0.5, 0.5, 0.5)))
+                transforms.Normalize((0.5, 0.5, 0.5, 0.5),
+                                     (0.5, 0.5, 0.5, 0.5)))
         return transforms.Compose(transform_list)
 
     def _add_dataset(self, root, filenames=None, metadata=None):
@@ -336,7 +336,9 @@ class BaseDataset(data.Dataset):
             for idx in range(len(data[data_type])):
                 if data[data_type][idx].dtype == np.uint16:
                     data[data_type][idx] = data[data_type][idx].astype(
-                        np.float32)
+                        np.float32)/65535.
+                elif  data[data_type][idx].shape[2] == 4:
+                    data[data_type][idx][:,:,:3] = data[data_type][idx][:,:,:3]/255
                 data[data_type][idx] = self.transform[data_type](
                     data[data_type][idx])
         return data

@@ -55,9 +55,10 @@ class Trainer(Vid2VidTrainer):
         """
         self.net_G_module.reset_renderer(is_flipped_input=data['is_flipped'])
         # Keep unprojections on cpu to prevent unnecessary transfer.
-        unprojections = data.pop('unprojections')
+        #unprojections = data.pop('unprojections')
         data = to_cuda(data)
-        data['unprojections'] = unprojections
+        #data['unprojections'] = unprojections
+        data['unprojections'] = None
 
         self.current_iteration = current_iteration
         if not self.is_inference:
@@ -126,13 +127,15 @@ class Trainer(Vid2VidTrainer):
             # Go over all frames of this sequence.
             video = []
             for idx, data in enumerate(tqdm(loader)):
-                key = data['key']['images'][0][0]
-                filename = key.split('/')[-1]
+                #key = data['key']['images'][0][0]
+                #filename = key.split('/')[-1]
+                filename = f'frame_{idx:04d}'
 
                 # Create output dir for this sequence.
                 if idx == 0:
-                    output_dir, seq_name = \
-                        self.create_sequence_output_dir(root_output_dir, key)
+                    '''output_dir, seq_name = \
+                        self.create_sequence_output_dir(root_output_dir, key)'''
+                    output_dir, seq_name = '/data/graphdeco/user/schabril/spade/results/test_flow2/video', 'seq1'
                     video_path = os.path.join(output_dir, '..', seq_name)
 
                 # Get output, and save all vis to all/.
@@ -213,7 +216,7 @@ class Trainer(Vid2VidTrainer):
                 vis_labels.append(tensor2im(value[:, -1]))
 
         # Get gt image.
-        im = tensor2im(data['images'][:, -1])
+        '''im = tensor2im(data['images'][:, -1])
 
         # Get guidance image and masks.
         if self.net_G_output['guidance_images_and_masks'] is not None:
@@ -232,7 +235,10 @@ class Trainer(Vid2VidTrainer):
             im,
             guidance_image, guidance_mask,
             tensor2im(self.net_G_output['fake_images']),
-        ]
+        ]'''
+        vis_images = [
+            *vis_labels,
+            tensor2im(self.net_G_output['fake_images'])]
         return vis_images
 
     def gen_frames(self, data, use_model_average=False):
@@ -302,7 +308,9 @@ class Trainer(Vid2VidTrainer):
             t (int): Current time.
         """
         label = data['label'][:, t]
-        image = data['images'][:, t]
+        #image = data['images'][:, t]
+        flow = data['flow'][:,t][:,:2,:,:]
+        mask = data['flow'][:,t][:,2:,:,:]
 
         # Get keypoint mapping.
         unprojection = None
@@ -331,7 +339,9 @@ class Trainer(Vid2VidTrainer):
 
         data_t = dict()
         data_t['label'] = label
-        data_t['image'] = image
+        #data_t['image'] = image
+        data_t['flow'] = flow
+        data_t['mask'] = mask
         data_t['prev_labels'] = prev_labels
         data_t['prev_images'] = prev_images
         data_t['real_prev_image'] = data['images'][:, t - 1] if t > 0 else None
@@ -411,14 +421,14 @@ class Trainer(Vid2VidTrainer):
                         tensor2im(first_net_G_output_avg['fake_raw_images'])]
 
                 if self.use_flow:
-                    flow_gt, conf_gt = self.criteria['Flow'].flowNet(
+                    '''flow_gt, conf_gt = self.criteria['Flow'].flowNet(
                         data['images'][:, -1], data['images'][:, -2])
                     warped_image_gt = resample(data['images'][:, -1], flow_gt)
                     vis_images_first += [
                         tensor2flow(flow_gt),
                         tensor2im(conf_gt, normalize=False),
                         tensor2im(warped_image_gt),
-                    ]
+                    ]'''
                     vis_images += [
                         tensor2flow(net_G_output['fake_flow_maps']),
                         tensor2im(net_G_output['fake_occlusion_masks'],
@@ -426,11 +436,11 @@ class Trainer(Vid2VidTrainer):
                         tensor2im(net_G_output['warped_images']),
                     ]
                     if self.cfg.trainer.model_average:
-                        vis_images_first += [
+                        '''vis_images_first += [
                             tensor2flow(flow_gt),
                             tensor2im(conf_gt, normalize=False),
                             tensor2im(warped_image_gt),
-                        ]
+                        ]'''
                         vis_images += [
                             tensor2flow(net_G_output_avg['fake_flow_maps']),
                             tensor2im(net_G_output_avg['fake_occlusion_masks'],
@@ -494,8 +504,10 @@ class Trainer(Vid2VidTrainer):
             load_single_image_model_weights = False
         else:
             load_single_image_model_weights = True
+        if not hasattr(cfg,'local_rank'):
+            cfg.local_rank = 0
         self.net_G.module._init_single_image_model(
-            load_weights=load_single_image_model_weights)
+            load_weights=load_single_image_model_weights, locrank = cfg.local_rank)
 
         # Call the original super function.
         return super().load_checkpoint(cfg, checkpoint_path)

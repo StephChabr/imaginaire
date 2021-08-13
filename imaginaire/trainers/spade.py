@@ -199,18 +199,19 @@ class Trainer(BaseTrainer):
             label_lengths = self.train_data_loader.dataset.get_label_lengths()
             labels = split_labels(data['label'], label_lengths)
             # Get visualization of the segmentation mask.
-            segmap = tensor2label(labels['seg_maps'],
-                                  label_lengths['seg_maps'],
-                                  output_normalized_tensor=True)
-            segmap = torch.cat([x.unsqueeze(0) for x in segmap], 0)
+            #segmap = tensor2label(labels['seg_maps'],
+            #                      label_lengths['seg_maps'],
+            #                      output_normalized_tensor=True)
+            segmap = labels['segmaps']
+            #segmap = torch.cat([x.unsqueeze(0) for x in segmap], 0)
             net_G_output = self.net_G(data, random_style=True)
-            vis_images = [data['images'],
+            vis_images = [data['images'][:,:3,:,:],
                           segmap,
-                          net_G_output['fake_images']]
+                          net_G_output['fake_images'][:,:3,:,:]]
             if self.cfg.trainer.model_average:
                 net_G_model_average_output = \
                     self.net_G.module.averaged_model(data, random_style=True)
-                vis_images.append(net_G_model_average_output['fake_images'])
+                vis_images.append(net_G_model_average_output['fake_images'][:,:3,:,:])
         return vis_images
 
     def recalculate_model_average_batch_norm_statistics(self, data_loader):

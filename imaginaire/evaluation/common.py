@@ -57,7 +57,7 @@ def get_activations(data_loader, key_real, key_fake,
         images = apply_imagenet_normalization(images)
         images = F.interpolate(images, size=(299, 299),
                                mode='bilinear', align_corners=True)
-        y = inception(images)
+        y = inception(images[:,:3,:,:])
         batch_y.append(y)
         if sample_size is not None and \
                 data_loader.batch_size * world_size * (it + 1) >= sample_size:

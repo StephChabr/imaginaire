@@ -1,4 +1,5 @@
 # flake8: noqa
+import torch
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 

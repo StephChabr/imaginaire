@@ -2,6 +2,7 @@
 #
 # This work is made available under the Nvidia Source Code License-NC.
 # To view a copy of this license, check out LICENSE.md
+import faulthandler; faulthandler.enable()
 import argparse
 
 from imaginaire.config import Config
@@ -31,15 +32,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    set_affinity(args.local_rank)
+    #set_affinity(args.local_rank)
     set_random_seed(args.seed, by_rank=True)
     cfg = Config(args.config)
-
     # If args.single_gpu is set to True,
     # we will disable distributed data parallel
     if not args.single_gpu:
         cfg.local_rank = args.local_rank
-        init_dist(cfg.local_rank)
+        init_dist(cfg.local_rank,backend='gloo')
 
     # Override the number of data loading workers if necessary
     if args.num_workers is not None:

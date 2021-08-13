@@ -5,6 +5,9 @@
 import os
 import time
 
+import numpy as np
+from PIL import Image
+
 import torch
 import torchvision
 from torch import nn
@@ -448,6 +451,7 @@ class BaseTrainer(object):
         """
         self.net_G.eval()
         vis_images = self._get_visualizations(data)
+        
         if is_master() and vis_images is not None:
             vis_images = torch.cat(vis_images, dim=3).float()
             vis_images = (vis_images + 1) / 2
@@ -455,7 +459,7 @@ class BaseTrainer(object):
             vis_images.clamp_(0, 1)
             os.makedirs(os.path.dirname(path), exist_ok=True)
             image_grid = torchvision.utils.make_grid(
-                vis_images, nrow=1, padding=0, normalize=False)
+                vis_images, nrow=1, padding=0, normalize=True)
             if self.cfg.trainer.image_to_tensorboard:
                 self.image_meter.write_image(image_grid, self.current_iteration)
             torchvision.utils.save_image(image_grid, path, nrow=1)

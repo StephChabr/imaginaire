@@ -36,6 +36,11 @@ class FolderDataset(data.Dataset):
             img (PIL.Image) or buf (str): Contents of file for this key.
         """
         # Figure out decoding params.
+        '''if path == b'seq1/render.00003':
+            path = b'seq2/render.00006'
+        else:
+            path = b'seq2/render.00007'
+        print(path)'''
         ext = self.extensions[data_type]
         if ext in IMG_EXTENSIONS:
             is_image = True
@@ -46,6 +51,9 @@ class FolderDataset(data.Dataset):
                 dtype, mode = np.uint8, 3
             else:
                 dtype, mode = np.uint8, -1
+        elif 'npy' in ext:
+            is_image = False
+            is_numpy = True
         else:
             is_image = False
 
@@ -64,7 +72,11 @@ class FolderDataset(data.Dataset):
             # BGR to RGB if 3 channels.
             if img.ndim == 3 and img.shape[-1] == 3:
                 img = img[:, :, ::-1]
-            img = Image.fromarray(img)
+           # img = Image.fromarray(img)
+            return img
+        elif is_numpy:
+            img = np.load(filepath)
+            img[:,:,:2] = img[:,:,1::-1]
             return img
         else:
             return buf

@@ -94,6 +94,7 @@ class PerceptualLoss(nn.Module):
         inp, target = \
             apply_imagenet_normalization(inp), \
             apply_imagenet_normalization(target)
+        inp, target = inp[:,:3,:,:], target[:,:3,:,:]
         if self.resize:
             inp = F.interpolate(
                 inp, mode=self.resize_mode, size=(224, 224),
@@ -136,7 +137,6 @@ class PerceptualLoss(nn.Module):
                 target = F.interpolate(
                     target, mode=self.resize_mode, scale_factor=0.5,
                     align_corners=False, recompute_scale_factor=True)
-
         return loss.float()
 
 

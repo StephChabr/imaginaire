@@ -9,7 +9,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from scipy.stats import truncnorm
-from torch._six import container_abcs, string_classes
+#from torch._six import container_abcs, string_classes
+from torch._six import string_classes
+import collections.abc as container_abcs
 
 
 def split_labels(labels, label_lengths):
@@ -228,7 +230,7 @@ def apply_imagenet_normalization(input):
     # normalize the input back to [0, 1]
     normalized_input = (input + 1) / 2
     # normalize the input using the ImageNet mean and std
-    mean = normalized_input.new_tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-    std = normalized_input.new_tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+    mean = normalized_input.new_tensor([0.485, 0.456, 0.406, 0.5]).view(1, 4, 1, 1)
+    std = normalized_input.new_tensor([0.229, 0.224, 0.225, 0.225]).view(1, 4, 1, 1)
     output = (normalized_input - mean) / std
     return output

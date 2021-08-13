@@ -69,7 +69,7 @@ class LMDBDataset(data.Dataset):
             # BGR to RGB if 3 channels.
             if img.ndim == 3 and img.shape[-1] == 3:
                 img = img[:, :, ::-1]
-            img = Image.fromarray(img)
+            #img = Image.fromarray(img)
             return img
         else:
             return buf

@@ -13,6 +13,8 @@ from imaginaire.utils.trainer import (get_model_optimizer_and_scheduler,
                                       get_trainer)
 from imaginaire.utils.visualization import tensor2im
 
+from PIL import Image
+
 
 class Generator(Vid2VidGenerator):
     r"""world consistent vid2vid generator constructor.
@@ -40,12 +42,14 @@ class Generator(Vid2VidGenerator):
         # Initialize the rest same as vid2vid.
         super().__init__(gen_cfg, data_cfg)
 
-    def _init_single_image_model(self, load_weights=True):
+    def _init_single_image_model(self, load_weights=True, locrank = 0):
         r"""Load single image model, if any."""
         if self.single_image_model is None and \
                 hasattr(self.gen_cfg, 'single_image_model'):
             print('Using single image model...')
             single_image_cfg = Config(self.gen_cfg.single_image_model.config)
+            if not hasattr(single_image_cfg, 'local_rank'):
+                single_image_cfg.local_rank = locrank
 
             # Init model.
             net_G, net_D, opt_G, opt_D, sch_G, sch_D = \
@@ -140,6 +144,7 @@ class Generator(Vid2VidGenerator):
 
         label = data['label']
         unprojection = data['unprojection']
+        unprojection = None
         label_prev, img_prev = data['prev_labels'], data['prev_images']
         is_first_frame = img_prev is None
         z = getattr(data, 'z', None)
@@ -229,8 +234,10 @@ class Generator(Vid2VidGenerator):
                 label_concat = torch.cat([label_prev.view(bs, -1, h, w),
                                           label], dim=1)
                 img_prev_concat = img_prev.view(bs, -1, h, w)
-                flow, mask = self.flow_network_temp(
-                    label_concat, img_prev_concat)
+                #flow, mask = self.flow_network_temp(
+                 #   label_concat, img_prev_concat)
+                flow = data['flow']
+                mask = data['mask']
                 img_warp = resample(img_prev[:, -1], flow)
                 if self.spade_combine:
                     # if using SPADE combine, integrate the warped image (and

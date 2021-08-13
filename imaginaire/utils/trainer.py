@@ -199,6 +199,7 @@ def _wrap_model(cfg, model):
     Returns:
         (obj): Wrapped PyTorch network model.
     """
+    torch.backends.cudnn.benchmark = False
     if torch.distributed.is_available() and dist.is_initialized():
         ddp = cfg.trainer.distributed_data_parallel
         if ddp == 'pytorch':

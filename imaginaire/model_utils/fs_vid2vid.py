@@ -10,6 +10,7 @@ import torch
 import torch.nn.functional as F
 
 
+
 def resample(image, flow):
     r"""Resamples an image using the provided flow.
 
@@ -20,10 +21,12 @@ def resample(image, flow):
         output (NxCxHxW tensor) : Resampled image.
     """
     assert flow.shape[1] == 2
+    
     b, c, h, w = image.size()
     grid = get_grid(b, (h, w))
     flow = torch.cat([flow[:, 0:1, :, :] / ((w - 1.0) / 2.0),
                       flow[:, 1:2, :, :] / ((h - 1.0) / 2.0)], dim=1)
+    flow = flow.float()
     final_grid = (grid + flow).permute(0, 2, 3, 1)
     try:
         output = F.grid_sample(image, final_grid, mode='bilinear',
@@ -31,6 +34,7 @@ def resample(image, flow):
     except Exception:
         output = F.grid_sample(image, final_grid, mode='bilinear',
                                padding_mode='border')
+    
     return output
 
 

@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from imaginaire.evaluation.fid import compute_fid
 from imaginaire.losses import (FeatureMatchingLoss, FlowLoss, GANLoss,
-                               PerceptualLoss)
+                               PerceptualLoss, MaskedL1Loss)
 from imaginaire.model_utils.fs_vid2vid import (concat_frames, detach,
                                                get_fg_mask,
                                                pre_process_densepose, resample)
@@ -146,7 +146,8 @@ class Trainer(BaseTrainer):
         # warping loss when used to warp images, and loss on the occlusion mask.
         self.use_flow = hasattr(cfg.gen, 'flow')
         if self.use_flow:
-            self.criteria['Flow'] = FlowLoss(cfg)
+            #self.criteria['Flow'] = FlowLoss(cfg)
+            self.criteria['Flow'] = MaskedL1Loss()
             self.weights['Flow'] = self.weights['Flow_L1'] = \
                 self.weights['Flow_Warp'] = \
                 self.weights['Flow_Mask'] = loss_weight.flow
@@ -510,9 +511,12 @@ class Trainer(BaseTrainer):
 
         # Flow and mask loss.
         if self.use_flow:
-            self.gen_losses['Flow_L1'], self.gen_losses['Flow_Warp'], \
-                self.gen_losses['Flow_Mask'] = self.criteria['Flow'](
-                data_t, net_G_output, self.current_epoch)
+            #self.gen_losses['Flow_L1'], self.gen_losses['Flow_Warp'], \
+             #   self.gen_losses['Flow_Mask'] = self.criteria['Flow'](
+              #  data_t, net_G_output, self.current_epoch)
+            self.gen_losses['Flow_L1'] = self.criteria['Flow'](
+                net_G_output['fake_images'].float(),\
+                    net_G_output['warped_images'].float(), data_t['mask'].float())
 
         # Temporal GAN loss and feature matching loss.
         if self.cfg.trainer.loss_weight.temporal_gan > 0:

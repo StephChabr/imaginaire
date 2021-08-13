@@ -162,6 +162,7 @@ class Config(AttrDict):
             |[-+]?\\.(?:inf|Inf|INF)
             |\\.(?:nan|NaN|NAN))$''', re.X),
             list(u'-+0123456789.'))
+        cfg_dict = None
         try:
             with open(filename, 'r') as f:
                 cfg_dict = yaml.load(f, Loader=loader)

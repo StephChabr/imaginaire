@@ -278,7 +278,7 @@ class Augmentor(object):
             for idx in range(len(inputs[data_type])):
                 value = inputs[data_type][idx]
                 # Get resize h, w.
-                w, h = value.size
+                w, h, _ = value.shape
                 self.original_h, self.original_w = h, w
                 self.resize_h, self.resize_w = self._get_resize_h_w(h, w)
                 # Convert to numpy array with 3 dims (H, W, C).
@@ -355,9 +355,9 @@ class Augmentor(object):
                 continue
             for idx in range(len(inputs[data_type])):
                 if idx == 0:
-                    w, h = inputs[data_type][idx].size
+                    w, h, _ = inputs[data_type][idx].shape
                 else:
-                    this_w, this_h = inputs[data_type][idx].size
+                    this_w, this_h, _ = inputs[data_type][idx].shape
                     # assert this_w == w and this_h == h
                     # assert this_w / (1.0 * this_h) == w / (1.0 * h)
                     if this_w / (1.0 * this_h) != w / (1.0 * h):
@@ -370,9 +370,9 @@ class Augmentor(object):
                         data_type not in self.image_data_types:
                     continue
                 if idx == 0:
-                    w, h = inputs[data_type][0].size
+                    w, h, _ = inputs[data_type][0].shape
                 else:
-                    this_w, this_h = inputs[data_type][0].size
+                    this_w, this_h, _ = inputs[data_type][0].shape
                     # assert this_w == w and this_h == h
                     # assert this_w / (1.0 * this_h) == w / (1.0 * h)
                     if this_w / (1.0 * this_h) != w / (1.0 * h):

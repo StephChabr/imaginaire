@@ -117,6 +117,8 @@ class Generator(nn.Module):
                 setattr(style_enc_cfg, 'num_filters', 128)
             if not hasattr(style_enc_cfg, 'kernel_size'):
                 setattr(style_enc_cfg, 'kernel_size', 3)
+            if not hasattr(style_enc_cfg, 'freeze_random'):
+                setattr(style_enc_cfg, 'freeze_random', False)
             if not hasattr(style_enc_cfg, 'weight_norm_type'):
                 setattr(style_enc_cfg, 'weight_norm_type', weight_norm_type)
             setattr(style_enc_cfg, 'input_image_channels', image_channels)
@@ -525,6 +527,9 @@ class StyleEncoder(nn.Module):
         self.layer6 = base_conv2d_block(num_filters * 8, num_filters * 8)
         self.fc_mu = LinearBlock(num_filters * 8 * 4 * 4, style_dims)
         self.fc_var = LinearBlock(num_filters * 8 * 4 * 4, style_dims)
+        
+        self.freeze_random = style_enc_cfg.freeze_random
+        self.eps = None
 
     def forward(self, input_x):
         r"""SPADE Style Encoder forward.
@@ -549,6 +554,10 @@ class StyleEncoder(nn.Module):
         mu = self.fc_mu(x)
         logvar = self.fc_var(x)
         std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
+        if self.eps is None or not self.freeze_random:
+            eps = torch.randn_like(std)
+            self.eps = eps
+        else:
+            eps = self.eps
         z = eps.mul(std) + mu
         return mu, logvar, z

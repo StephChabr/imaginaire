@@ -13,6 +13,7 @@ from imaginaire.model_utils.fs_vid2vid import select_object
 from imaginaire.utils.distributed import master_only_print as print
 
 
+
 class Dataset(BaseDataset):
     r"""Paired video dataset for use in vid2vid, wc_vid2vid.
 
@@ -238,6 +239,7 @@ class Dataset(BaseDataset):
 
         # Load all data for this index.
         data = self.load_from_dataset(keys, lmdbs)
+        
 
         # Apply ops pre augmentation.
         data = self.apply_ops(data, self.pre_aug_ops)
@@ -247,6 +249,7 @@ class Dataset(BaseDataset):
 
         # Do augmentations for images.
         data, is_flipped = self.perform_augmentation(data, paired=True)
+        
 
         # Create copy of keypoint data types before post aug.
         kp_data = {}
@@ -295,7 +298,7 @@ class Dataset(BaseDataset):
 
         # Apply full data ops.
         data = self.apply_ops(data, self.full_data_ops, full_data=True)
-
+        
         return data
 
     def __getitem__(self, index):

@@ -6,6 +6,8 @@ import math
 import os
 import pynvml
 
+import win32process
+
 pynvml.nvmlInit()
 
 
@@ -54,8 +56,10 @@ def set_affinity(gpu_id=None):
         gpu_id = int(os.getenv('LOCAL_RANK', 0))
 
     dev = device(gpu_id)
-    os.sched_setaffinity(0, dev.getCpuAffinity())
+####    #os.sched_setaffinity(0, dev.getCpuAffinity())
+    win32process.SetProcessAffinityMask(0, dev.getCpuAffinity())
 
     # list of ints
     # representing the logical cores this process is now affinitied with
-    return os.sched_getaffinity(0)
+####    #return os.sched_getaffinity(0)
+    return win32process.GetProcessAffinityMask(0)

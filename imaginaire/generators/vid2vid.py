@@ -335,7 +335,7 @@ class Generator(BaseNetwork):
         self.temporal_initialized = True
         self.generate_raw_output = getattr(flow_cfg, 'generate_raw_output',
                                            False) and self.spade_combine
-        self.flow_network_temp = FlowGenerator(flow_cfg, self.data_cfg)
+        #self.flow_network_temp = FlowGenerator(flow_cfg, self.data_cfg)
         if cfg_init is not None:
             self.flow_network_temp.apply(weights_init(cfg_init.type,
                                                       cfg_init.gain))
